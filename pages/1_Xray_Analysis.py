@@ -68,26 +68,26 @@ st.markdown("### 📥 1. Select or Upload Chest Radiograph")
 tab_upload, tab_samples = st.tabs(["📤 Upload Your X-ray File", "⚡ 1-Click Test Demo Patients"])
 
 with tab_upload:
-    with st.container(border=True):
-        uploaded_file = st.file_uploader(
-            label="Upload Chest X-ray Image",
-            type=["jpg", "jpeg", "png"],
-            help="Upload an AP (Anterior-Posterior) or PA (Posteroanterior) chest radiograph in JPG, JPEG, or PNG format.",
-            key="uploader_widget",
-        )
-        st.markdown(
-            """
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding: 8px 12px; background: #F8FAFC; border-radius: 8px; border: 1px solid #E2E8F0; color: #475569; font-size: 13px;">
-                <span>📁 <b>Supported Formats:</b> JPG, JPEG, PNG</span>
-                <span>⚖️ <b>Max File Size:</b> 200 MB</span>
-                <span>🩻 <b>View:</b> AP / PA Chest Radiograph</span>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        if uploaded_file is not None:
-            st.session_state["selected_image"] = uploaded_file
-            st.session_state["selected_image_name"] = uploaded_file.name
+    uploaded_file = st.file_uploader(
+        label="Upload Chest X-ray Image",
+        type=["jpg", "jpeg", "png"],
+        help="Upload an AP (Anterior-Posterior) or PA (Posteroanterior) chest radiograph in JPG, JPEG, or PNG format.",
+        key="uploader_widget",
+    )
+    st.markdown(
+        """
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding: 10px 14px; background: #FFFFFF; border-radius: 10px; border: 1px solid #E2E8F0; color: #475569; font-size: 13px; box-shadow: 0 2px 6px rgba(16, 36, 58, 0.03);">
+            <span>📁 <b>Supported Formats:</b> JPG, JPEG, PNG</span>
+            <span>⚖️ <b>Max File Size:</b> 200 MB</span>
+            <span>🩻 <b>Recommended View:</b> Standard AP / PA Radiograph</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    if uploaded_file is not None:
+        st.session_state["selected_image"] = uploaded_file
+        st.session_state["selected_image_name"] = uploaded_file.name
+
 
 
 with tab_samples:
