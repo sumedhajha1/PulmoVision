@@ -1,0 +1,23 @@
+{
+  "architecture": "DenseNet121",
+  "input_shape": [
+    224,
+    224,
+    3
+  ],
+  "classes": [
+    "NORMAL",
+    "PNEUMONIA"
+  ],
+  "trained_timestamp": "2026-10-10T22:37:19.184709",
+  "epochs_completed": 3,
+  "final_train_loss": 0.0851,
+  "final_train_acc": 0.9661,
+  "final_val_loss": 0.0619,
+  "final_val_acc": 1.0,
+  "fine_tuning_enabled": false,
+  "class_weights": {
+    "0": 1.9448173005219984,
+    "1": 0.6730322580645162
+  }
+}
