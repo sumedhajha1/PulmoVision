@@ -71,7 +71,7 @@ def apply_custom_theme():
         color: #2DD4BF !important;
     }
 
-    /* HERO HEADER CARD (Navy gradient with bright white heading and light-blue subtitle) */
+    /* HERO HEADER CARD (Navy gradient with 100% pure white text) */
     .pv-hero-card {
         background: linear-gradient(135deg, #10243A 0%, #1E3A5F 100%) !important;
         border-radius: 14px !important;
@@ -84,34 +84,37 @@ def apply_custom_theme():
     .pv-hero-card,
     .pv-hero-card *,
     [data-testid="stMarkdownContainer"] .pv-hero-card,
-    [data-testid="stMarkdownContainer"] .pv-hero-card * {
-        color: #FFFFFF !important;
-    }
-
-    .pv-hero-card h1,
-    .pv-hero-card .pv-hero-title,
-    [data-testid="stMarkdownContainer"] .pv-hero-card h1,
-    [data-testid="stMarkdownContainer"] .pv-hero-card .pv-hero-title {
+    [data-testid="stMarkdownContainer"] .pv-hero-card *,
+    .pv-hero-title,
+    .pv-hero-subtitle {
         color: #FFFFFF !important;
         -webkit-text-fill-color: #FFFFFF !important;
-        font-size: 26px !important;
-        font-weight: 800 !important;
-        margin: 0 0 4px 0 !important;
-        line-height: 1.25 !important;
-        letter-spacing: -0.01em !important;
     }
 
-    .pv-hero-card p,
-    .pv-hero-card .pv-hero-subtitle,
-    [data-testid="stMarkdownContainer"] .pv-hero-card p,
-    [data-testid="stMarkdownContainer"] .pv-hero-card .pv-hero-subtitle {
-        color: #D6E4F0 !important;
-        -webkit-text-fill-color: #D6E4F0 !important;
-        font-size: 14.5px !important;
-        margin: 0 !important;
-        font-weight: 500 !important;
-        line-height: 1.4 !important;
+    .pv-hero-card div,
+    .pv-hero-card span,
+    .pv-hero-card h1,
+    .pv-hero-card p {
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
     }
+
+    /* Streamlit Alert & Info Box Styling: White text on dark navy */
+    [data-testid="stAlert"] {
+        background-color: #10243A !important;
+        border: 1px solid #1E3A5F !important;
+        border-left: 5px solid #0D9488 !important;
+        border-radius: 10px !important;
+    }
+
+    [data-testid="stAlert"] *,
+    [data-testid="stAlert"] p,
+    [data-testid="stAlert"] span,
+    [data-testid="stAlert"] div {
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+    }
+
 
     /* Crisp White Cards & Container Borders */
     [data-testid="stVerticalBlockBorderWrapper"] {
@@ -399,27 +402,28 @@ def render_sidebar():
 
 
 def render_header(title: str, subtitle: str, icon: str = "🫁"):
-    """Renders a modern medical hero card with deep navy background, bright white heading, and light blue subtitle."""
+    """Renders a modern medical hero card with deep navy background and 100% pure white title and subtitle."""
     st.markdown(
         f"""
-        <div class="pv-hero-card">
+        <div class="pv-hero-card" style="background: linear-gradient(135deg, #10243A 0%, #1E3A5F 100%) !important; border-radius: 14px !important; padding: 22px 26px !important; margin-bottom: 18px !important; border: 1px solid #2A4D77 !important; box-shadow: 0 6px 20px rgba(16, 36, 58, 0.12) !important;">
             <div style="display: flex; align-items: center; gap: 16px;">
-                <span style="font-size: 34px; background: rgba(255, 255, 255, 0.12); padding: 8px 14px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; color: #FFFFFF !important;">
+                <span style="font-size: 34px; background: rgba(255, 255, 255, 0.12); padding: 8px 14px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; color: #FFFFFF !important; -webkit-text-fill-color: #FFFFFF !important;">
                     {icon}
                 </span>
                 <div style="flex: 1;">
-                    <h1 class="pv-hero-title" style="color: #FFFFFF !important; -webkit-text-fill-color: #FFFFFF !important; font-weight: 800; font-size: 26px; margin: 0 0 4px 0; line-height: 1.25;">
+                    <div class="pv-hero-title" style="color: #FFFFFF !important; -webkit-text-fill-color: #FFFFFF !important; font-weight: 800 !important; font-size: 26px !important; margin: 0 0 4px 0 !important; line-height: 1.25 !important; letter-spacing: -0.01em !important;">
                         {title}
-                    </h1>
-                    <p class="pv-hero-subtitle" style="color: #D6E4F0 !important; -webkit-text-fill-color: #D6E4F0 !important; font-size: 14.5px; margin: 0; font-weight: 500;">
+                    </div>
+                    <div class="pv-hero-subtitle" style="color: #FFFFFF !important; -webkit-text-fill-color: #FFFFFF !important; font-size: 14.5px !important; margin: 0 !important; font-weight: 500 !important; opacity: 0.95 !important; line-height: 1.4 !important;">
                         {subtitle}
-                    </p>
+                    </div>
                 </div>
             </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
+
 
 
 

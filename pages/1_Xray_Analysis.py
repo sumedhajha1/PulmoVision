@@ -174,8 +174,9 @@ if current_img is not None:
         with st.container(border=True):
             st.markdown("#### Clinical Analysis Parameters")
             st.markdown(
-                f"<div style='background: #E0F2FE; border: 1px solid #7DD3FC; border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; color: #0369A1; font-weight: 600; font-size: 13.5px;'>"
-                f"Active Study: <b>{st.session_state['selected_image_name']}</b>"
+                f"<div style='background: #10243A; border: 1.5px solid #0D9488; border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; color: #FFFFFF !important; -webkit-text-fill-color: #FFFFFF !important; font-weight: 600; font-size: 13.5px;'>"
+                f"<span style='color: #2DD4BF !important; -webkit-text-fill-color: #2DD4BF !important; font-weight: 700;'>Active Study:</span> "
+                f"<span style='color: #FFFFFF !important; -webkit-text-fill-color: #FFFFFF !important;'>{st.session_state['selected_image_name']}</span>"
                 f"</div>",
                 unsafe_allow_html=True,
             )
