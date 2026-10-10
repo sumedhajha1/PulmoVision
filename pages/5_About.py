@@ -6,7 +6,7 @@ Transfer Learning, Grad-CAM, Monte Carlo Dropout, and Ethical Considerations.
 
 import streamlit as st
 from config import MEDICAL_DISCLAIMER
-from src.ui_components import apply_custom_theme, render_disclaimer, render_header
+from src.ui_components import apply_custom_theme, render_disclaimer, render_header, render_sidebar
 
 st.set_page_config(
     page_title="About & Methodology - PulmoVision AI",
@@ -15,22 +15,24 @@ st.set_page_config(
 )
 
 apply_custom_theme()
+render_sidebar()
 
 render_header(
     title="Methodology, Deep Learning Theory & Limitations",
-    subtitle="Comprehensive Academic Guide to DenseNet121, Grad-CAM, and Monte Carlo Uncertainty Estimation",
+    subtitle="Comprehensive Academic Guide to DenseNet121, Grad-CAM, Monte Carlo Uncertainty, and Viva Preparation",
     icon="📚",
 )
 
 render_disclaimer()
 
-tab_arch, tab_xai, tab_unc, tab_metrics, tab_ethics = st.tabs(
+tab_arch, tab_xai, tab_unc, tab_metrics, tab_ethics, tab_viva = st.tabs(
     [
         "1. DenseNet121 & Transfer Learning",
         "2. Explainable AI (Grad-CAM)",
         "3. Monte Carlo Uncertainty",
         "4. Clinical Metrics & Imbalance",
         "5. Limitations & Ethical AI",
+        "6. Final-Year Viva Q&A Guide",
     ]
 )
 
@@ -111,3 +113,57 @@ with tab_ethics:
             "- **DICOM vs Compressed Formats:** The training dataset utilizes 8-bit JPEG scans rather than high-bit-depth raw DICOM files (12-16 bit). Compression artifacts may discard subtle parenchymal textures.\n"
             "- **Triage Support Only:** This tool is engineered strictly as an educational and triage prioritization prototype. In a hospital workflow, AI flags studies for accelerated radiologist review; it never issues autonomous clinical prescriptions."
         )
+
+with tab_viva:
+    st.markdown("### 🎓 Final-Year B.Tech Viva Voce Quick Reference")
+    with st.container(border=True):
+        st.markdown("#### High-Yield Viva Questions & Clinical Rationale")
+        
+        with st.expander("Q1: Why did you select DenseNet121 over ResNet50 or standard CNN?", expanded=True):
+            st.markdown(
+                """
+                - **Answer:** DenseNet121 features **direct feed-forward connections** between all layers within dense blocks.
+                - Unlike ResNet which uses summation ($x_l = H(x_{l-1}) + x_{l-1}$), DenseNet uses **feature concatenation** ($x_l = H([x_0, x_1, ..., x_{l-1}])$).
+                - This promotes maximum feature reuse (preserving subtle low-level parenchymal textures) and mitigates vanishing gradients while requiring significantly fewer parameters (~7M vs ~25M in ResNet50), preventing overfitting on clinical datasets.
+                """
+            )
+
+        with st.expander("Q2: The training data has 74.3% Pneumonia and 25.7% Normal scans. How did you handle this imbalance?"):
+            st.markdown(
+                """
+                - **Answer:** We implemented **Inverse Class Frequency Weighting**:
+                  $$w_c = \\frac{N_{\\text{total}}}{C \\cdot N_c}$$
+                  This yielded $w_{\\text{NORMAL}} = 1.9448$ and $w_{\\text{PNEUMONIA}} = 0.6730$, creating an effective **2.89 : 1 loss penalty ratio**.
+                - During backpropagation, misclassifying a minority Normal image is penalized nearly $3\\times$ higher than misclassifying a Pneumonia scan.
+                - Furthermore, augmentation was applied **strictly to the training partition**, and the held-out test set was evaluated using Sensitivity, Specificity, F1, and PR-AUC.
+                """
+            )
+
+        with st.expander("Q3: Why is high Sensitivity (95.9%) prioritized over Specificity (72.6%) in clinical triage?"):
+            st.markdown(
+                """
+                - **Answer:** In acute pulmonary screening:
+                  - **False Negative (FN, Type II error):** A patient with active pneumonia is sent home undiagnosed, risking severe respiratory deterioration or sepsis.
+                  - **False Positive (FP, Type I error):** A healthy individual is flagged for further physician inspection or PCR testing.
+                - Because FN carries catastrophic clinical risk, screening models are calibrated to maximize Sensitivity (catching 374 out of 390 pneumonias).
+                """
+            )
+
+        with st.expander("Q4: How does Grad-CAM compute heatmaps and why is ReLU applied?"):
+            st.markdown(
+                """
+                - **Answer:** Grad-CAM calculates the gradient of the predicted class score $y^c$ with respect to feature activation maps $A^k$ of the final convolutional layer (`conv5_block16_concat` in DenseNet121).
+                - Global average pooling calculates importance weights $\\alpha_k^c$.
+                - The weighted combination is passed through **ReLU** because we only want to highlight features that have a **positive influence** on the target class score (filtering out features that support other classes).
+                """
+            )
+
+        with st.expander("Q5: What is the clinical benefit of Monte Carlo Dropout uncertainty estimation?"):
+            st.markdown(
+                """
+                - **Answer:** Standard softmax probabilities suffer from overconfidence even on ambiguous or corrupted radiographs.
+                - By keeping dropout active during test-time inference and computing $T=20$ forward passes, we approximate a Bayesian posterior distribution.
+                - If the model's stochastic outputs vary widely (high Shannon entropy $> 0.80$ bits), the system triggers an **'Uncertain / Review Required'** flag, preventing automated triage mistakes on ambiguous scans.
+                """
+            )
+

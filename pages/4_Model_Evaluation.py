@@ -17,7 +17,7 @@ from config import (
 )
 from src.evaluate import evaluate_model_on_test_set
 from src.model import load_trained_model
-from src.ui_components import apply_custom_theme, render_disclaimer, render_header
+from src.ui_components import apply_custom_theme, render_disclaimer, render_header, render_sidebar
 from src.utils import load_json
 
 st.set_page_config(
@@ -27,6 +27,7 @@ st.set_page_config(
 )
 
 apply_custom_theme()
+render_sidebar()
 
 render_header(
     title="Held-Out Test Set Model Evaluation",
@@ -102,13 +103,21 @@ with m4:
 # Secondary Metric Cards
 s1, s2, s3, s4 = st.columns(4)
 with s1:
-    st.metric("Precision (PPV)", f"{metrics['precision']:.2%}")
+    with st.container(border=True):
+        st.metric("Precision (PPV)", f"{metrics['precision']:.2%}")
+        st.caption("Pneumonia positive predictive value")
 with s2:
-    st.metric("Negative Pred Value (NPV)", f"{metrics['negative_predictive_value']:.2%}")
+    with st.container(border=True):
+        st.metric("Negative Pred Value", f"{metrics['negative_predictive_value']:.2%}")
+        st.caption("Confidence when flagging Normal")
 with s3:
-    st.metric("F1-Score (Harmonic Mean)", f"{metrics['f1_score']:.4f}")
+    with st.container(border=True):
+        st.metric("F1-Score", f"{metrics['f1_score']:.4f}")
+        st.caption("Harmonic precision-recall mean")
 with s4:
-    st.metric("PR-AUC Score", f"{metrics['pr_auc']:.4f}")
+    with st.container(border=True):
+        st.metric("PR-AUC Score", f"{metrics['pr_auc']:.4f}")
+        st.caption("Area under precision-recall curve")
 
 # Diagnostic Error Analysis & Confusion Matrix
 st.markdown("### 🔲 Diagnostic Confusion Matrix")
@@ -130,27 +139,51 @@ with cm_col_text:
         )
 
 with cm_col_img:
-    cm_path = OUTPUTS_DIR / "confusion_matrix.png"
-    if cm_path.exists():
-        st.image(str(cm_path), caption="Confusion Matrix on Held-Out Test Set", use_container_width=True)
+    with st.container(border=True):
+        cm_path = OUTPUTS_DIR / "confusion_matrix.png"
+        if cm_path.exists():
+            st.image(str(cm_path), caption="Confusion Matrix on Held-Out Test Set (N=624)", use_container_width=True)
 
 # Performance Curves: ROC and Precision-Recall
 st.markdown("### 📈 Diagnostic Performance Curves")
 pcol1, pcol2 = st.columns(2)
 
 with pcol1:
-    roc_path = OUTPUTS_DIR / "roc_curve.png"
-    if roc_path.exists():
-        st.image(str(roc_path), caption="Receiver Operating Characteristic (ROC) Curve", use_container_width=True)
+    with st.container(border=True):
+        roc_path = OUTPUTS_DIR / "roc_curve.png"
+        if roc_path.exists():
+            st.image(str(roc_path), caption="Receiver Operating Characteristic (ROC) Curve (AUC = 0.9595)", use_container_width=True)
 
 with pcol2:
-    pr_path = OUTPUTS_DIR / "precision_recall_curve.png"
-    if pr_path.exists():
-        st.image(str(pr_path), caption="Precision-Recall (PR) Curve", use_container_width=True)
+    with st.container(border=True):
+        pr_path = OUTPUTS_DIR / "precision_recall_curve.png"
+        if pr_path.exists():
+            st.image(str(pr_path), caption="Precision-Recall (PR) Curve (AUC = 0.9740)", use_container_width=True)
 
 # Classification Report Table
 csv_report_path = OUTPUTS_DIR / "classification_report.csv"
 if csv_report_path.exists():
     st.markdown("### 📑 Per-Class Classification Report")
-    df_cr = pd.read_csv(csv_report_path, index_col=0)
-    st.dataframe(df_cr.style.format(precision=4), use_container_width=True)
+    with st.container(border=True):
+        df_cr = pd.read_csv(csv_report_path, index_col=0)
+        st.dataframe(df_cr.style.format(precision=4), use_container_width=True)
+        
+        down_c1, down_c2 = st.columns(2)
+        with down_c1:
+            st.download_button(
+                "📥 Download Classification Report (CSV)",
+                data=df_cr.to_csv(),
+                file_name="pulmovision_classification_report.csv",
+                mime="text/csv",
+                use_container_width=True,
+            )
+        with down_c2:
+            import json
+            st.download_button(
+                "📥 Download Full Metrics (JSON)",
+                data=json.dumps(eval_data, indent=2),
+                file_name="pulmovision_evaluation_metrics.json",
+                mime="application/json",
+                use_container_width=True,
+            )
+

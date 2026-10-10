@@ -20,7 +20,7 @@ from config import (
 )
 from src.dataset_loader import inspect_dataset_directory
 from src.train import train_pulmovision_pipeline
-from src.ui_components import apply_custom_theme, render_disclaimer, render_header
+from src.ui_components import apply_custom_theme, render_disclaimer, render_header, render_sidebar
 from src.utils import load_json
 
 st.set_page_config(
@@ -30,6 +30,7 @@ st.set_page_config(
 )
 
 apply_custom_theme()
+render_sidebar()
 
 render_header(
     title="Model Training & Fine-Tuning Studio",
@@ -148,16 +149,20 @@ if submitted:
 curves_img_path = OUTPUTS_DIR / "training_curves.png"
 if curves_img_path.exists():
     st.markdown("### 📈 Learning Curves (Loss & Accuracy)")
-    st.image(str(curves_img_path), caption="Training Convergence Curves across Epochs", use_container_width=True)
+    with st.container(border=True):
+        st.image(str(curves_img_path), caption="DenseNet121 Training Convergence Curves across Epochs", use_container_width=True)
 
 # CLI Alternative Info
 st.markdown("---")
-st.markdown("#### 💻 Running Training from Terminal")
-st.markdown(
-    """
-    For background training without keeping the browser window open, run from PowerShell:
-    ```powershell
-    .\\.venv\\Scripts\\python.exe scripts/train_model.py --epochs 10 --batch_size 16
-    ```
-    """
-)
+with st.container(border=True):
+    st.markdown("#### 💻 Background Headless Training via PowerShell")
+    st.markdown(
+        """
+        To execute long training runs without keeping your web browser open, execute the standalone training script:
+        ```powershell
+        .\\.venv\\Scripts\\python.exe scripts/train_model.py --epochs 10 --batch_size 16 --learning_rate 0.001
+        ```
+        The script automatically calculates class weights, logs validation checkpoints, and updates `outputs/training_curves.png`.
+        """
+    )
+

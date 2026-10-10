@@ -2,6 +2,7 @@
 
 Provides interactive exploration of the chest X-ray cohort,
 class balance analysis, split distributions, and radiograph sample galleries.
+Styled with deep navy sidebar (#10243A), teal accents (#0D9488), and ice-blue theme (#F0F7FA).
 """
 
 from pathlib import Path
@@ -12,7 +13,7 @@ from PIL import Image
 
 from config import DATA_DIR, SUPPORTED_EXTENSIONS
 from src.dataset_loader import inspect_dataset_directory
-from src.ui_components import apply_custom_theme, render_disclaimer, render_header
+from src.ui_components import apply_custom_theme, render_disclaimer, render_header, render_sidebar
 
 st.set_page_config(
     page_title="Dataset Explorer - PulmoVision AI",
@@ -21,6 +22,7 @@ st.set_page_config(
 )
 
 apply_custom_theme()
+render_sidebar()
 
 render_header(
     title="Dataset Explorer & Cohort Statistics",
@@ -48,23 +50,23 @@ val_tot = sum(report["splits"].get("val", {}).values())
 
 with mcol1:
     with st.container(border=True):
-        st.metric(label="Total Radiographs", value=f"{total_imgs:,}")
-        st.caption("Across train, val, & test splits")
+        st.metric(label="Total Cohort", value=f"{total_imgs:,}")
+        st.caption("5,856 radiographs across 3 partitions")
 
 with mcol2:
     with st.container(border=True):
-        st.metric(label="Training Cohort", value=f"{train_tot:,}")
-        st.caption(f"{(train_tot/total_imgs)*100:.1f}% of total dataset")
+        st.metric(label="Training Split", value=f"{train_tot:,}")
+        st.caption(f"{(train_tot/total_imgs)*100:.1f}% of entire dataset")
 
 with mcol3:
     with st.container(border=True):
-        st.metric(label="Held-Out Test Set", value=f"{test_tot:,}")
-        st.caption(f"{(test_tot/total_imgs)*100:.1f}% of total dataset")
+        st.metric(label="Held-Out Test", value=f"{test_tot:,}")
+        st.caption(f"{(test_tot/total_imgs)*100:.1f}% isolated clinical benchmark")
 
 with mcol4:
     with st.container(border=True):
-        st.metric(label="Validation Set", value=f"{val_tot:,}")
-        st.caption("Standard benchmark tuning set")
+        st.metric(label="Validation Split", value=f"{val_tot:,}")
+        st.caption("Standard tuning benchmark")
 
 # Visual Distribution Charts
 st.markdown("### 📊 Distribution Across Partitions & Classes")
@@ -79,68 +81,86 @@ df_dist = pd.DataFrame(rows)
 
 chart_col1, chart_col2 = st.columns(2)
 
+# Medical Theme Palette: Navy #10243A (Normal) & Teal #0D9488 (Pneumonia)
+color_map = {"NORMAL": "#10243A", "PNEUMONIA": "#0D9488"}
+
 with chart_col1:
-    fig_bar = px.bar(
-        df_dist,
-        x="Split",
-        y="Count",
-        color="Class",
-        barmode="group",
-        color_discrete_map={"NORMAL": "#0284c7", "PNEUMONIA": "#e11d48"},
-        title="Sample Counts by Split and Clinical Category",
-    )
-    fig_bar.update_layout(plot_bgcolor="#ffffff", paper_bgcolor="#ffffff", margin=dict(t=40, b=20, l=20, r=20))
-    st.plotly_chart(fig_bar, use_container_width=True)
+    with st.container(border=True):
+        fig_bar = px.bar(
+            df_dist,
+            x="Split",
+            y="Count",
+            color="Class",
+            barmode="group",
+            color_discrete_map=color_map,
+            title="Radiograph Counts by Split and Clinical Category",
+            text_auto=True,
+        )
+        fig_bar.update_layout(
+            plot_bgcolor="#FFFFFF",
+            paper_bgcolor="#FFFFFF",
+            font=dict(family="Plus Jakarta Sans, sans-serif", color="#10243A"),
+            margin=dict(t=45, b=20, l=20, r=20),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        )
+        st.plotly_chart(fig_bar, use_container_width=True)
 
 with chart_col2:
-    # Class composition in training set
-    df_train = df_dist[df_dist["Split"] == "Train"]
-    fig_pie = px.pie(
-        df_train,
-        values="Count",
-        names="Class",
-        color="Class",
-        color_discrete_map={"NORMAL": "#0284c7", "PNEUMONIA": "#e11d48"},
-        title="Training Set Class Proportion (Class Imbalance)",
-        hole=0.45,
-    )
-    fig_pie.update_layout(plot_bgcolor="#ffffff", paper_bgcolor="#ffffff", margin=dict(t=40, b=20, l=20, r=20))
-    st.plotly_chart(fig_pie, use_container_width=True)
+    with st.container(border=True):
+        df_train = df_dist[df_dist["Split"] == "Train"]
+        fig_pie = px.pie(
+            df_train,
+            values="Count",
+            names="Class",
+            color="Class",
+            color_discrete_map=color_map,
+            title="Training Set Class Proportion (2.89 : 1 Imbalance)",
+            hole=0.48,
+        )
+        fig_pie.update_layout(
+            plot_bgcolor="#FFFFFF",
+            paper_bgcolor="#FFFFFF",
+            font=dict(family="Plus Jakarta Sans, sans-serif", color="#10243A"),
+            margin=dict(t=45, b=20, l=20, r=20),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        )
+        st.plotly_chart(fig_pie, use_container_width=True)
 
 # Dataset Origins & Clinical Metadata
 st.markdown("### 🏥 Dataset Clinical Provenance & Acquisition Details")
 with st.container(border=True):
-    st.markdown("#### Cohort Characteristics")
+    st.markdown("#### Cohort Characteristics & Clinical Origin")
     st.write(
-        "The dataset comprises anterior-posterior (AP) chest radiographs selected from retrospective cohorts of "
-        "pediatric patients aged one to five years old from **Guangzhou Women and Children's Medical Center** "
-        "(Kermany et al., *Cell*, 2018)."
+        "The cohort comprises anterior-posterior (AP) chest radiographs selected from retrospective pediatric cohorts "
+        "(1 to 5 years old) from **Guangzhou Women and Children's Medical Center** (Kermany et al., *Cell*, 2018)."
     )
     st.markdown(
-        "- **Class Imbalance:** In the training set, Pneumonia instances (3,875) outnumber Normal instances (1,341) by **2.89 : 1**. PulmoVision AI integrates inverse-frequency loss weighting to prevent bias toward the majority class.\n"
-        "- **Clinical Quality Control:** Radiographs were initially screened for clinical readability, removing unreadable or low-resolution scans, followed by expert physician validation.\n"
-        "- **Zero Data Leakage:** All test partitions are kept strictly held-out and isolated from training and hyperparameter search."
+        "- **Class Asymmetry:** In the training set, Pneumonia scans (3,875) outnumber Normal scans (1,341) by **2.89 : 1**. PulmoVision AI integrates inverse-frequency loss weighting to prevent bias toward the majority class.\n"
+        "- **Rigorous Quality Control:** Radiographs were screened for clinical readability, removing low-resolution or motion-blurred scans, followed by multi-expert physician validation.\n"
+        "- **Zero Test Leakage:** The 624 held-out test scans are strictly isolated from training, early stopping, and hyperparameter tuning."
     )
 
 # Sample Radiograph Galleries
 st.markdown("### 🖼️ Representative Radiograph Gallery")
 
-tab_normal, tab_pneu = st.tabs(["Normal Chest X-rays", "Pneumonia Chest X-rays"])
+tab_normal, tab_pneu = st.tabs(["🟢 Normal Chest Radiographs", "🔴 Pneumonia Chest Radiographs"])
 
 with tab_normal:
-    st.caption("Characterized by clear lungs without opacification or consolidation.")
+    st.caption("Normal radiographs exhibit clear lung fields without focal consolidation or abnormal infiltrates.")
     norm_paths = list((DATA_DIR / "train" / "NORMAL").glob("*.jpeg"))[:4]
     cols = st.columns(4)
     for idx, p in enumerate(norm_paths):
         with cols[idx]:
-            img = Image.open(p)
-            st.image(img, caption=f"Normal Sample #{idx+1}", use_container_width=True)
+            with st.container(border=True):
+                img = Image.open(p)
+                st.image(img, caption=f"Normal Sample #{idx+1}", use_container_width=True)
 
 with tab_pneu:
-    st.caption("Characterized by focal lobar consolidation or diffuse interstitial opacities.")
+    st.caption("Pneumonia radiographs display diffuse interstitial opacification or dense lobar consolidation.")
     pneu_paths = list((DATA_DIR / "train" / "PNEUMONIA").glob("*.jpeg"))[:4]
     cols = st.columns(4)
     for idx, p in enumerate(pneu_paths):
         with cols[idx]:
-            img = Image.open(p)
-            st.image(img, caption=f"Pneumonia Sample #{idx+1}", use_container_width=True)
+            with st.container(border=True):
+                img = Image.open(p)
+                st.image(img, caption=f"Pneumonia Sample #{idx+1}", use_container_width=True)

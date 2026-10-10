@@ -2,6 +2,7 @@
 
 Provides interactive radiograph upload, 1-click test patient demos,
 DenseNet121 inference, Monte Carlo Dropout uncertainty, and Grad-CAM visualization.
+Styled with deep navy sidebar (#10243A), teal accents (#0D9488), and ice-blue theme (#F0F7FA).
 """
 
 from io import BytesIO
@@ -18,7 +19,7 @@ from config import (
 )
 from src.predict import run_inference_pipeline
 from src.model import load_trained_model
-from src.ui_components import apply_custom_theme, render_disclaimer, render_header
+from src.ui_components import apply_custom_theme, render_disclaimer, render_header, render_sidebar
 
 st.set_page_config(
     page_title="Chest X-ray Analysis - PulmoVision AI",
@@ -27,6 +28,7 @@ st.set_page_config(
 )
 
 apply_custom_theme()
+render_sidebar()
 
 render_header(
     title="Chest X-ray Analysis & Triage Support",
@@ -67,12 +69,22 @@ tab_upload, tab_samples = st.tabs(["📤 Upload Your X-ray File", "⚡ 1-Click T
 
 with tab_upload:
     with st.container(border=True):
-        st.markdown("#### Drag and drop or browse your radiograph file")
+        st.markdown(
+            """
+            <div style="text-align: center; padding: 6px 0 12px 0;">
+                <span style="font-size: 32px;">🩻</span>
+                <h4 style="margin: 4px 0 2px 0; color: #10243A;">Upload Anterior-Posterior (AP) Chest X-ray</h4>
+                <p style="color: #64748B; font-size: 13.5px; margin: 0;">Supported formats: JPEG, JPG, PNG (Max size: 25MB)</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
         uploaded_file = st.file_uploader(
-            "Upload Chest X-ray (.jpg, .jpeg, .png):",
+            "Choose a file:",
             type=["jpg", "jpeg", "png"],
-            help="High-resolution anterior-posterior (AP) or posteroanterior (PA) chest radiographs up to 25MB.",
+            help="High-resolution chest radiographs from hospital imaging or clinical benchmarks.",
             key="uploader_widget",
+            label_visibility="collapsed",
         )
         if uploaded_file is not None:
             st.session_state["selected_image"] = uploaded_file
@@ -91,9 +103,9 @@ with tab_samples:
         with sample_col1:
             st.markdown(
                 """
-                <div style="background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 10px; padding: 14px; margin-bottom: 10px;">
-                    <strong style="color: #15803d; font-size: 16px;">🟢 Patient Case A: Healthy / Normal</strong>
-                    <p style="color: #166534; font-size: 13.5px; margin: 4px 0 0 0;">Clear pulmonary parenchyma without focal opacification.</p>
+                <div style="background: #F0FDF4; border: 1.5px solid #86EFAC; border-radius: 10px; padding: 14px; margin-bottom: 10px;">
+                    <strong style="color: #15803D; font-size: 15px;">🟢 Patient Case A: Healthy / Normal</strong>
+                    <p style="color: #166534; font-size: 13px; margin: 4px 0 0 0;">Clear pulmonary parenchyma without focal opacification.</p>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -101,15 +113,15 @@ with tab_samples:
             if st.button("👉 Load Normal Demo Patient", use_container_width=True):
                 if norm_samples:
                     st.session_state["selected_image"] = norm_samples[0]
-                    st.session_state["selected_image_name"] = f"Normal Sample ({norm_samples[0].name})"
+                    st.session_state["selected_image_name"] = f"Normal Patient ({norm_samples[0].name})"
                     st.rerun()
 
         with sample_col2:
             st.markdown(
                 """
-                <div style="background: #fef2f2; border: 1.5px solid #fca5a5; border-radius: 10px; padding: 14px; margin-bottom: 10px;">
-                    <strong style="color: #b91c1c; font-size: 16px;">🔴 Patient Case B: Pneumonia Infiltrate</strong>
-                    <p style="color: #991b1b; font-size: 13.5px; margin: 4px 0 0 0;">Focal consolidation or diffuse parenchymal infiltration.</p>
+                <div style="background: #FEF2F2; border: 1.5px solid #FCA5A5; border-radius: 10px; padding: 14px; margin-bottom: 10px;">
+                    <strong style="color: #B91C1C; font-size: 15px;">🔴 Patient Case B: Pneumonia Infiltrate</strong>
+                    <p style="color: #991B1B; font-size: 13px; margin: 4px 0 0 0;">Focal consolidation or diffuse parenchymal infiltration.</p>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -117,19 +129,19 @@ with tab_samples:
             if st.button("👉 Load Pneumonia Demo Patient", use_container_width=True):
                 if pneu_samples:
                     st.session_state["selected_image"] = pneu_samples[0]
-                    st.session_state["selected_image_name"] = f"Pneumonia Sample ({pneu_samples[0].name})"
+                    st.session_state["selected_image_name"] = f"Pneumonia Patient ({pneu_samples[0].name})"
                     st.rerun()
 
         st.markdown("---")
-        st.caption("Or choose from 624 held-out test radiographs:")
+        st.caption("Browse across 624 held-out test cohort images:")
         all_samples = norm_samples[:10] + pneu_samples[:10]
         if all_samples:
             chosen = st.selectbox(
-                "Browse Additional Test Cohort Samples:",
+                "Select specific cohort scan:",
                 all_samples,
                 format_func=lambda x: f"[{x.parent.name}] {x.name}",
             )
-            if st.button("📥 Load Selected Cohort Image", use_container_width=True):
+            if st.button("📥 Load Selected Scan", use_container_width=True):
                 st.session_state["selected_image"] = chosen
                 st.session_state["selected_image_name"] = f"[{chosen.parent.name}] {chosen.name}"
                 st.rerun()
@@ -153,7 +165,7 @@ if current_img is not None:
                     preview_pil = Image.open(current_img)
                 
                 st.image(preview_pil, caption=f"Active Study: {st.session_state['selected_image_name']}", use_container_width=True)
-                st.caption(f"Dimensions: {preview_pil.size[0]}×{preview_pil.size[1]} px · Format: {preview_pil.format or 'RGB'}")
+                st.caption(f"Dimensions: {preview_pil.size[0]}×{preview_pil.size[1]} px · Channels: {len(preview_pil.getbands())}")
             except Exception as e:
                 st.error(f"Cannot decode image: {e}")
                 st.stop()
@@ -162,8 +174,8 @@ if current_img is not None:
         with st.container(border=True):
             st.markdown("#### Clinical Analysis Parameters")
             st.markdown(
-                f"<div style='background: #e0f2fe; border: 1px solid #7dd3fc; border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; color: #0369a1; font-weight: 600; font-size: 14px;'>"
-                f"Active Study: {st.session_state['selected_image_name']}"
+                f"<div style='background: #E0F2FE; border: 1px solid #7DD3FC; border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; color: #0369A1; font-weight: 600; font-size: 13.5px;'>"
+                f"Active Study: <b>{st.session_state['selected_image_name']}</b>"
                 f"</div>",
                 unsafe_allow_html=True,
             )
@@ -177,7 +189,7 @@ if current_img is not None:
                 help="Runs T stochastic forward passes with active dropout to measure predictive entropy.",
             )
 
-            enable_cam = st.checkbox("Generate High-Resolution Grad-CAM Heatmap", value=True)
+            enable_cam = st.checkbox("Compute High-Resolution Grad-CAM Heatmap", value=True)
 
             st.write("")
             analyze_btn = st.button("🚀 Analyze Radiograph Now", type="primary", use_container_width=True)
@@ -189,7 +201,7 @@ if current_img is not None:
 
     # ----------------- EXECUTE DIAGNOSTIC INFERENCE -----------------
     if analyze_btn:
-        with st.spinner("Executing DenseNet121 inference, computing Grad-CAM gradients, and calculating Bayesian uncertainty..."):
+        with st.spinner("Executing DenseNet121 inference, computing Grad-CAM gradients, and sampling Monte Carlo Dropout..."):
             try:
                 results = run_inference_pipeline(
                     image_input=current_img,
@@ -205,7 +217,7 @@ if current_img is not None:
         st.markdown("### 📋 3. Diagnostic Results & Clinical Triage")
 
         # Triage Classification Banner
-        res_col1, res_col2 = st.columns([1.4, 1.6])
+        res_col1, res_col2 = st.columns([1.3, 1.7])
 
         with res_col1:
             with st.container(border=True):
@@ -219,15 +231,15 @@ if current_img is not None:
                     badge_html = '<span class="pv-badge-uncertain">⚠️ UNCERTAIN / REVIEW REQUIRED</span>'
 
                 st.markdown(f"<div style='margin-top: 6px; margin-bottom: 14px;'>{badge_html}</div>", unsafe_allow_html=True)
-                st.markdown(f"<p style='font-size: 15px; margin-bottom: 6px;'><b>Clinical Status:</b> {results['triage_label']}</p>", unsafe_allow_html=True)
-                st.markdown(f"<p style='font-size: 15px;'><b>Model Confidence:</b> <code>{results['confidence_estimate']:.1%}</code></p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='font-size: 14.5px; margin-bottom: 6px;'><b>Clinical Status:</b> {results['triage_label']}</p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='font-size: 14.5px;'><b>Model Confidence:</b> <code style='color: #0D9488;'>{results['confidence_estimate']:.1%}</code></p>", unsafe_allow_html=True)
 
         with res_col2:
             with st.container(border=True):
                 st.markdown('<div class="pv-metric-lbl">Probability Distribution</div>', unsafe_allow_html=True)
-                st.markdown(f"<p style='font-size: 14.5px; margin-bottom: 2px;'><b>NORMAL:</b> {results['normal_probability']:.1%}</p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='font-size: 14px; margin-bottom: 2px;'><b>NORMAL:</b> {results['normal_probability']:.1%}</p>", unsafe_allow_html=True)
                 st.progress(float(results["normal_probability"]))
-                st.markdown(f"<p style='font-size: 14.5px; margin-top: 10px; margin-bottom: 2px;'><b>PNEUMONIA:</b> {results['pneumonia_probability']:.1%}</p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='font-size: 14px; margin-top: 10px; margin-bottom: 2px;'><b>PNEUMONIA:</b> {results['pneumonia_probability']:.1%}</p>", unsafe_allow_html=True)
                 st.progress(float(results["pneumonia_probability"]))
 
         # Uncertainty Quantification Cards
@@ -258,16 +270,29 @@ if current_img is not None:
                 "Gradient-weighted Class Activation Mapping calculates gradients of the predicted class score with "
                 "respect to the final convolutional feature maps of DenseNet121, localizing pulmonary evidence."
             )
-            vcol1, vcol2, vcol3 = st.columns(3)
-            with vcol1:
-                with st.container(border=True):
-                    st.image(results["original_image"], caption="1. Original Radiograph", use_container_width=True)
-            with vcol2:
-                with st.container(border=True):
-                    st.image(results["gradcam_heatmap"], caption="2. Activation Heatmap (JET)", use_container_width=True)
-            with vcol3:
-                with st.container(border=True):
-                    st.image(results["gradcam_overlay"], caption="3. Anatomical Overlay", use_container_width=True)
+
+            cam_tab1, cam_tab2 = st.tabs(["🖼️ 3-Panel Panoramic View", "🔬 Detailed Side-by-Side Comparison"])
+
+            with cam_tab1:
+                vcol1, vcol2, vcol3 = st.columns(3)
+                with vcol1:
+                    with st.container(border=True):
+                        st.image(results["original_image"], caption="1. Original Radiograph", use_container_width=True)
+                with vcol2:
+                    with st.container(border=True):
+                        st.image(results["gradcam_heatmap"], caption="2. Activation Heatmap (JET)", use_container_width=True)
+                with vcol3:
+                    with st.container(border=True):
+                        st.image(results["gradcam_overlay"], caption="3. Anatomical Overlay", use_container_width=True)
+
+            with cam_tab2:
+                c1, c2 = st.columns(2)
+                with c1:
+                    with st.container(border=True):
+                        st.image(results["original_image"], caption="Original Radiograph (Full Res)", use_container_width=True)
+                with c2:
+                    with st.container(border=True):
+                        st.image(results["gradcam_overlay"], caption="Anatomical Overlay (Highlighted Lesions)", use_container_width=True)
 
             # Download Options
             dcol1, dcol2 = st.columns(2)
