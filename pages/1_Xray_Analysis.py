@@ -69,26 +69,26 @@ tab_upload, tab_samples = st.tabs(["📤 Upload Your X-ray File", "⚡ 1-Click T
 
 with tab_upload:
     with st.container(border=True):
+        uploaded_file = st.file_uploader(
+            label="Upload Chest X-ray Image",
+            type=["jpg", "jpeg", "png"],
+            help="Upload an AP (Anterior-Posterior) or PA (Posteroanterior) chest radiograph in JPG, JPEG, or PNG format.",
+            key="uploader_widget",
+        )
         st.markdown(
             """
-            <div style="text-align: center; padding: 6px 0 12px 0;">
-                <span style="font-size: 32px;">🩻</span>
-                <h4 style="margin: 4px 0 2px 0; color: #10243A;">Upload Anterior-Posterior (AP) Chest X-ray</h4>
-                <p style="color: #64748B; font-size: 13.5px; margin: 0;">Supported formats: JPEG, JPG, PNG (Max size: 25MB)</p>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding: 8px 12px; background: #F8FAFC; border-radius: 8px; border: 1px solid #E2E8F0; color: #475569; font-size: 13px;">
+                <span>📁 <b>Supported Formats:</b> JPG, JPEG, PNG</span>
+                <span>⚖️ <b>Max File Size:</b> 200 MB</span>
+                <span>🩻 <b>View:</b> AP / PA Chest Radiograph</span>
             </div>
             """,
             unsafe_allow_html=True,
         )
-        uploaded_file = st.file_uploader(
-            "Choose a file:",
-            type=["jpg", "jpeg", "png"],
-            help="High-resolution chest radiographs from hospital imaging or clinical benchmarks.",
-            key="uploader_widget",
-            label_visibility="collapsed",
-        )
         if uploaded_file is not None:
             st.session_state["selected_image"] = uploaded_file
             st.session_state["selected_image_name"] = uploaded_file.name
+
 
 with tab_samples:
     with st.container(border=True):

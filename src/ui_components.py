@@ -19,9 +19,13 @@ def apply_custom_theme():
     @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
     /* Global typography */
-    html, body, [class*="css"], .stMarkdown, p, span, div {
+    html, body, [data-testid="stAppViewContainer"] {
         font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
         color: #10243A;
+    }
+
+    p, span, label, li {
+        font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
     }
 
     /* Ice-blue page background */
@@ -31,8 +35,8 @@ def apply_custom_theme():
 
     /* Main container max width and spacing */
     .block-container {
-        padding-top: 2rem !important;
-        padding-bottom: 3.5rem !important;
+        padding-top: 1.5rem !important;
+        padding-bottom: 3rem !important;
         max-width: 1200px !important;
     }
 
@@ -67,6 +71,48 @@ def apply_custom_theme():
         color: #2DD4BF !important;
     }
 
+    /* HERO HEADER CARD (Navy gradient with bright white heading and light-blue subtitle) */
+    .pv-hero-card {
+        background: linear-gradient(135deg, #10243A 0%, #1E3A5F 100%) !important;
+        border-radius: 14px !important;
+        padding: 22px 26px !important;
+        margin-bottom: 18px !important;
+        border: 1px solid #2A4D77 !important;
+        box-shadow: 0 6px 20px rgba(16, 36, 58, 0.12) !important;
+    }
+
+    .pv-hero-card,
+    .pv-hero-card *,
+    [data-testid="stMarkdownContainer"] .pv-hero-card,
+    [data-testid="stMarkdownContainer"] .pv-hero-card * {
+        color: #FFFFFF !important;
+    }
+
+    .pv-hero-card h1,
+    .pv-hero-card .pv-hero-title,
+    [data-testid="stMarkdownContainer"] .pv-hero-card h1,
+    [data-testid="stMarkdownContainer"] .pv-hero-card .pv-hero-title {
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
+        font-size: 26px !important;
+        font-weight: 800 !important;
+        margin: 0 0 4px 0 !important;
+        line-height: 1.25 !important;
+        letter-spacing: -0.01em !important;
+    }
+
+    .pv-hero-card p,
+    .pv-hero-card .pv-hero-subtitle,
+    [data-testid="stMarkdownContainer"] .pv-hero-card p,
+    [data-testid="stMarkdownContainer"] .pv-hero-card .pv-hero-subtitle {
+        color: #D6E4F0 !important;
+        -webkit-text-fill-color: #D6E4F0 !important;
+        font-size: 14.5px !important;
+        margin: 0 !important;
+        font-weight: 500 !important;
+        line-height: 1.4 !important;
+    }
+
     /* Crisp White Cards & Container Borders */
     [data-testid="stVerticalBlockBorderWrapper"] {
         background-color: #FFFFFF !important;
@@ -83,7 +129,7 @@ def apply_custom_theme():
         padding: 22px 24px !important;
         border: 1px solid #E2E8F0 !important;
         box-shadow: 0 4px 16px rgba(16, 36, 58, 0.04) !important;
-        margin-bottom: 20px !important;
+        margin-bottom: 16px !important;
     }
 
     .pv-card h1, .pv-card h2, .pv-card h3, .pv-card h4 {
@@ -155,20 +201,70 @@ def apply_custom_theme():
         background-color: #F0FDFA !important;
     }
 
-    /* Medical File Uploader */
+    /* Medical File Uploader (clean dropzone styling without conflicting wrapper) */
     [data-testid="stFileUploader"] {
-        background-color: #FFFFFF !important;
-        border: 2px dashed #0D9488 !important;
-        border-radius: 14px !important;
-        padding: 22px !important;
-        box-shadow: 0 4px 14px rgba(13, 148, 136, 0.06) !important;
-        transition: all 0.25s ease-in-out !important;
+        width: 100% !important;
+        margin: 0 0 6px 0 !important;
+        background-color: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        box-shadow: none !important;
     }
 
-    [data-testid="stFileUploader"]:hover {
+    [data-testid="stFileUploader"] > label,
+    [data-testid="stFileUploader"] [data-testid="stWidgetLabel"] p {
+        font-size: 15.5px !important;
+        font-weight: 700 !important;
+        color: #10243A !important;
+        margin-bottom: 8px !important;
+        display: block !important;
+    }
+
+    [data-testid="stFileUploadDropzone"] {
+        background-color: #FFFFFF !important;
+        border: 2px dashed #0D9488 !important;
+        border-radius: 12px !important;
+        padding: 24px 20px !important;
+        text-align: center !important;
+        box-shadow: 0 2px 10px rgba(13, 148, 136, 0.05) !important;
+        transition: all 0.2s ease-in-out !important;
+    }
+
+    [data-testid="stFileUploadDropzone"]:hover {
         background-color: #F0FDFA !important;
         border-color: #0F766E !important;
-        box-shadow: 0 6px 20px rgba(13, 148, 136, 0.15) !important;
+        box-shadow: 0 4px 16px rgba(13, 148, 136, 0.12) !important;
+    }
+
+    [data-testid="stFileUploadDropzone"] button {
+        background-color: #FFFFFF !important;
+        color: #0D9488 !important;
+        border: 1.5px solid #0D9488 !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        padding: 7px 22px !important;
+        font-size: 14px !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        margin: 6px auto !important;
+    }
+
+    [data-testid="stFileUploadDropzone"] button:hover {
+        background-color: #0D9488 !important;
+        color: #FFFFFF !important;
+        border-color: #0D9488 !important;
+        box-shadow: 0 2px 8px rgba(13, 148, 136, 0.25) !important;
+    }
+
+    [data-testid="stFileUploaderDropzoneInstructions"] span {
+        color: #10243A !important;
+        font-weight: 600 !important;
+        font-size: 14.5px !important;
+    }
+
+    [data-testid="stFileUploaderDropzoneInstructions"] small {
+        color: #64748B !important;
+        font-size: 12.5px !important;
     }
 
     /* Tabs Styling with Teal Active Indicators */
@@ -178,6 +274,7 @@ def apply_custom_theme():
         padding: 5px !important;
         border-radius: 12px !important;
         border: 1px solid #CBD5E1 !important;
+        margin-bottom: 12px !important;
     }
 
     .stTabs [data-baseweb="tab"] {
@@ -253,7 +350,7 @@ def apply_custom_theme():
         padding: 14px 18px !important;
         font-size: 13.5px !important;
         color: #115E59 !important;
-        margin-bottom: 22px !important;
+        margin-bottom: 18px !important;
         line-height: 1.55 !important;
         box-shadow: 0 2px 8px rgba(13, 148, 136, 0.05) !important;
     }
@@ -302,25 +399,19 @@ def render_sidebar():
 
 
 def render_header(title: str, subtitle: str, icon: str = "🫁"):
-    """Renders a modern medical hero card with deep navy background and teal accents."""
+    """Renders a modern medical hero card with deep navy background, bright white heading, and light blue subtitle."""
     st.markdown(
         f"""
-        <div style="
-            background: linear-gradient(135deg, #10243A 0%, #1E3A5F 100%);
-            border-radius: 14px;
-            padding: 24px 28px;
-            color: #FFFFFF;
-            margin-bottom: 22px;
-            border: 1px solid #2A4D77;
-            box-shadow: 0 6px 20px rgba(16, 36, 58, 0.12);
-        ">
+        <div class="pv-hero-card">
             <div style="display: flex; align-items: center; gap: 16px;">
-                <span style="font-size: 38px; background: rgba(255, 255, 255, 0.1); padding: 8px 14px; border-radius: 12px;">{icon}</span>
-                <div>
-                    <h1 style="color: #FFFFFF !important; font-weight: 800; font-size: 28px; margin: 0; line-height: 1.25;">
+                <span style="font-size: 34px; background: rgba(255, 255, 255, 0.12); padding: 8px 14px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; color: #FFFFFF !important;">
+                    {icon}
+                </span>
+                <div style="flex: 1;">
+                    <h1 class="pv-hero-title" style="color: #FFFFFF !important; -webkit-text-fill-color: #FFFFFF !important; font-weight: 800; font-size: 26px; margin: 0 0 4px 0; line-height: 1.25;">
                         {title}
                     </h1>
-                    <p style="color: #93C5FD !important; font-size: 15px; margin: 5px 0 0 0; font-weight: 500;">
+                    <p class="pv-hero-subtitle" style="color: #D6E4F0 !important; -webkit-text-fill-color: #D6E4F0 !important; font-size: 14.5px; margin: 0; font-weight: 500;">
                         {subtitle}
                     </p>
                 </div>
@@ -329,6 +420,7 @@ def render_header(title: str, subtitle: str, icon: str = "🫁"):
         """,
         unsafe_allow_html=True,
     )
+
 
 
 def render_disclaimer():
