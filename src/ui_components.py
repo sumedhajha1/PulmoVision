@@ -46,6 +46,26 @@ def apply_custom_theme():
         border-right: 1px solid #1E3A5F !important;
     }
 
+    /* Keep the branded sidebar fixed without Streamlit's duplicate toggle controls. */
+    [data-testid="stSidebarCollapseButton"],
+    [data-testid="stSidebarCollapsedControl"],
+    [data-testid="collapsedControl"],
+    button[aria-label="Close sidebar"],
+    button[aria-label="Open sidebar"],
+    button[aria-label="Expand sidebar"] {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+
+    /* Prevent the sidebar keyboard-shortcut hint from appearing over the layout. */
+    [data-testid="stSidebarCollapseButton"] + div,
+    [data-testid="stSidebarCollapsedControl"] [role="tooltip"],
+    [data-testid="stTooltipContent"] {
+        display: none !important;
+        visibility: hidden !important;
+    }
+
     [data-testid="stSidebar"] * {
         color: #F8FAFC !important;
     }
