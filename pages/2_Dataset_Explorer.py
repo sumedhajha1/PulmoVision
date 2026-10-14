@@ -35,18 +35,21 @@ render_disclaimer()
 
 def get_sample_images(split: str, class_name: str, limit: int = 4):
     """Return readable sample images across all supported file extensions."""
-    class_dir = DATA_DIR / split / class_name
-    if not class_dir.exists():
-        return []
+    dataset_class_dir = DATA_DIR / split / class_name
+    gallery_class_dir = DATA_DIR.parent.parent / "assets" / "gallery" / class_name
+    search_dirs = [dataset_class_dir, gallery_class_dir]
+    image_paths = []
+    for class_dir in search_dirs:
+        if class_dir.exists():
+            image_paths.extend(
+                path
+                for path in class_dir.iterdir()
+                if path.is_file() and path.suffix.lower() in SUPPORTED_EXTENSIONS and not path.name.startswith(".")
+            )
+        if len(image_paths) >= limit:
+            break
 
-    image_paths = sorted(
-        (
-            path
-            for path in class_dir.iterdir()
-            if path.is_file() and path.suffix.lower() in SUPPORTED_EXTENSIONS and not path.name.startswith(".")
-        ),
-        key=lambda path: path.name.lower(),
-    )
+    image_paths = sorted(set(image_paths), key=lambda path: path.name.lower())
     readable_paths = []
     for path in image_paths:
         try:
