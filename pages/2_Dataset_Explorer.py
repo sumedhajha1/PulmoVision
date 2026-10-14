@@ -32,6 +32,33 @@ render_header(
 
 render_disclaimer()
 
+
+def get_sample_images(split: str, class_name: str, limit: int = 4):
+    """Return readable sample images across all supported file extensions."""
+    class_dir = DATA_DIR / split / class_name
+    if not class_dir.exists():
+        return []
+
+    image_paths = sorted(
+        (
+            path
+            for path in class_dir.iterdir()
+            if path.is_file() and path.suffix.lower() in SUPPORTED_EXTENSIONS and not path.name.startswith(".")
+        ),
+        key=lambda path: path.name.lower(),
+    )
+    readable_paths = []
+    for path in image_paths:
+        try:
+            with Image.open(path) as image:
+                image.verify()
+            readable_paths.append(path)
+        except (OSError, ValueError):
+            continue
+        if len(readable_paths) >= limit:
+            break
+    return readable_paths
+
 # Inspect dataset
 report = inspect_dataset_directory(DATA_DIR)
 
@@ -147,20 +174,24 @@ tab_normal, tab_pneu = st.tabs(["🟢 Normal Chest Radiographs", "🔴 Pneumonia
 
 with tab_normal:
     st.caption("Normal radiographs exhibit clear lung fields without focal consolidation or abnormal infiltrates.")
-    norm_paths = list((DATA_DIR / "train" / "NORMAL").glob("*.jpeg"))[:4]
+    norm_paths = get_sample_images("train", "NORMAL")
     cols = st.columns(4)
     for idx, p in enumerate(norm_paths):
         with cols[idx]:
             with st.container(border=True):
-                img = Image.open(p)
-                st.image(img, caption=f"Normal Sample #{idx+1}", use_container_width=True)
+                with Image.open(p) as img:
+                    st.image(img.copy(), caption=f"Normal Sample #{idx+1}", use_container_width=True)
+    if not norm_paths:
+        st.info("No readable NORMAL images were found in the training split.")
 
 with tab_pneu:
     st.caption("Pneumonia radiographs display diffuse interstitial opacification or dense lobar consolidation.")
-    pneu_paths = list((DATA_DIR / "train" / "PNEUMONIA").glob("*.jpeg"))[:4]
+    pneu_paths = get_sample_images("train", "PNEUMONIA")
     cols = st.columns(4)
     for idx, p in enumerate(pneu_paths):
         with cols[idx]:
             with st.container(border=True):
-                img = Image.open(p)
-                st.image(img, caption=f"Pneumonia Sample #{idx+1}", use_container_width=True)
+                with Image.open(p) as img:
+                    st.image(img.copy(), caption=f"Pneumonia Sample #{idx+1}", use_container_width=True)
+    if not pneu_paths:
+        st.info("No readable PNEUMONIA images were found in the training split.")

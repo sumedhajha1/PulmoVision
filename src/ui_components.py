@@ -268,9 +268,23 @@ def apply_custom_theme():
         background-color: #FFFFFF !important;
         border: 2px dashed #0D9488 !important;
         border-radius: 12px !important;
-        padding: 24px 20px !important;
+        padding: 20px !important;
         box-shadow: 0 2px 10px rgba(13, 148, 136, 0.05) !important;
         transition: all 0.2s ease-in-out !important;
+    }
+
+    [data-testid="stFileUploadDropzone"] > div {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 18px !important;
+        min-width: 0 !important;
+    }
+
+    [data-testid="stFileUploaderDropzoneInstructions"] {
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+        text-align: left !important;
     }
 
     [data-testid="stFileUploadDropzone"]:hover {
@@ -289,6 +303,9 @@ def apply_custom_theme():
         font-size: 14px !important;
         cursor: pointer !important;
         transition: all 0.2s ease !important;
+        flex: 0 0 auto !important;
+        white-space: nowrap !important;
+        line-height: 1.2 !important;
     }
 
     [data-testid="stFileUploadDropzone"] button:hover {
@@ -302,11 +319,18 @@ def apply_custom_theme():
         color: #10243A !important;
         font-weight: 600 !important;
         font-size: 14.5px !important;
+        display: block !important;
+        line-height: 1.45 !important;
+        white-space: normal !important;
+        overflow-wrap: anywhere !important;
     }
 
     [data-testid="stFileUploaderDropzoneInstructions"] small {
         color: #64748B !important;
         font-size: 12.5px !important;
+        display: block !important;
+        line-height: 1.4 !important;
+        margin-top: 3px !important;
     }
 
     /* Tabs Styling with Teal Active Indicators */
