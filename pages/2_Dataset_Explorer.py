@@ -12,8 +12,14 @@ import plotly.express as px
 from PIL import Image
 
 from config import DATA_DIR, SUPPORTED_EXTENSIONS
-from src.dataset_loader import inspect_dataset_directory
-from src.ui_components import apply_custom_theme, render_disclaimer, render_header, render_sidebar
+from src.dataset_loader import inspect_dataset_directory, list_supported_image_files
+from src.ui_components import (
+    apply_custom_theme,
+    render_disclaimer,
+    render_header,
+    render_image_preview,
+    render_sidebar,
+)
 
 st.set_page_config(
     page_title="Dataset Explorer - PulmoVision AI",
@@ -40,12 +46,7 @@ def get_sample_images(split: str, class_name: str, limit: int = 4):
     search_dirs = [dataset_class_dir, gallery_class_dir]
     image_paths = []
     for class_dir in search_dirs:
-        if class_dir.exists():
-            image_paths.extend(
-                path
-                for path in class_dir.iterdir()
-                if path.is_file() and path.suffix.lower() in SUPPORTED_EXTENSIONS and not path.name.startswith(".")
-            )
+        image_paths.extend(list_supported_image_files(class_dir))
         if len(image_paths) >= limit:
             break
 
@@ -65,9 +66,16 @@ def get_sample_images(split: str, class_name: str, limit: int = 4):
 # Inspect dataset
 report = inspect_dataset_directory(DATA_DIR)
 
-if not report["exists"] or not report["is_valid"]:
-    st.error(f"Dataset path `{DATA_DIR}` not found or invalid.")
-    st.stop()
+dataset_available = report["exists"] and report["is_valid"]
+if not dataset_available:
+    st.warning(
+        "The full dataset is not available in this environment. Showing verified real-image gallery samples instead."
+    )
+    report["splits"] = {
+        "train": {"NORMAL": 0, "PNEUMONIA": 0},
+        "test": {"NORMAL": 0, "PNEUMONIA": 0},
+        "val": {"NORMAL": 0, "PNEUMONIA": 0},
+    }
 
 # Key Metric Cards
 mcol1, mcol2, mcol3, mcol4 = st.columns(4)
@@ -81,17 +89,19 @@ val_tot = sum(report["splits"].get("val", {}).values())
 with mcol1:
     with st.container(border=True):
         st.metric(label="Total Cohort", value=f"{total_imgs:,}")
-        st.caption("5,856 radiographs across 3 partitions")
+        st.caption("Full dataset available" if dataset_available else "Full dataset not mounted")
 
 with mcol2:
     with st.container(border=True):
         st.metric(label="Training Split", value=f"{train_tot:,}")
-        st.caption(f"{(train_tot/total_imgs)*100:.1f}% of entire dataset")
+        st.caption(f"{(train_tot / total_imgs) * 100:.1f}% of entire dataset" if total_imgs else "Not available")
 
 with mcol3:
     with st.container(border=True):
         st.metric(label="Held-Out Test", value=f"{test_tot:,}")
-        st.caption(f"{(test_tot/total_imgs)*100:.1f}% isolated clinical benchmark")
+        st.caption(
+            f"{(test_tot / total_imgs) * 100:.1f}% isolated clinical benchmark" if total_imgs else "Not available"
+        )
 
 with mcol4:
     with st.container(border=True):
@@ -182,10 +192,9 @@ with tab_normal:
     for idx, p in enumerate(norm_paths):
         with cols[idx]:
             with st.container(border=True):
-                with Image.open(p) as img:
-                    st.image(img.copy(), caption=f"Normal Sample #{idx+1}", use_container_width=True)
+                render_image_preview(p, f"Normal Sample #{idx+1}")
     if not norm_paths:
-        st.info("No readable NORMAL images were found in the training split.")
+        st.error("No readable NORMAL images were found. Check the dataset or gallery assets.")
 
 with tab_pneu:
     st.caption("Pneumonia radiographs display diffuse interstitial opacification or dense lobar consolidation.")
@@ -194,7 +203,6 @@ with tab_pneu:
     for idx, p in enumerate(pneu_paths):
         with cols[idx]:
             with st.container(border=True):
-                with Image.open(p) as img:
-                    st.image(img.copy(), caption=f"Pneumonia Sample #{idx+1}", use_container_width=True)
+                render_image_preview(p, f"Pneumonia Sample #{idx+1}")
     if not pneu_paths:
-        st.info("No readable PNEUMONIA images were found in the training split.")
+        st.error("No readable PNEUMONIA images were found. Check the dataset or gallery assets.")

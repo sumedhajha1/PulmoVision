@@ -8,7 +8,14 @@ Provides a premium medical dashboard design:
 - Standardized medical disclaimer and metric card helpers
 """
 
+import base64
+import html
+from io import BytesIO
+from pathlib import Path
+
 import streamlit as st
+from PIL import Image, ImageOps
+
 from config import MEDICAL_DISCLAIMER
 
 
@@ -52,7 +59,10 @@ def apply_custom_theme():
     [data-testid="collapsedControl"],
     button[aria-label="Close sidebar"],
     button[aria-label="Open sidebar"],
-    button[aria-label="Expand sidebar"] {
+    button[aria-label="Expand sidebar"],
+    button[aria-label="keyboard_double_arrow_left"],
+    button[aria-label="keyboard_double_arrow_right"],
+    [data-testid="stSidebarCollapseButton"] button {
         display: none !important;
         visibility: hidden !important;
         pointer-events: none !important;
@@ -186,6 +196,27 @@ def apply_custom_theme():
         color: #334155 !important;
         font-size: 14.5px !important;
         line-height: 1.65 !important;
+    }
+
+    .pv-image-preview {
+        margin: 0 !important;
+        text-align: center !important;
+    }
+
+    .pv-image-preview img {
+        display: block !important;
+        width: 100% !important;
+        max-height: 420px !important;
+        object-fit: contain !important;
+        border-radius: 10px !important;
+        background: #F8FAFC !important;
+    }
+
+    .pv-image-preview figcaption {
+        color: #64748B !important;
+        font-size: 12px !important;
+        margin-top: 8px !important;
+        overflow-wrap: anywhere !important;
     }
 
     /* Metric Card Styling */
@@ -423,6 +454,40 @@ def apply_custom_theme():
     </style>
     """
     st.markdown(custom_css, unsafe_allow_html=True)
+
+
+def render_image_preview(image_input, caption: str, max_size: int = 900):
+    """Render a real image without relying on Streamlit's media endpoint."""
+    try:
+        if isinstance(image_input, (str, Path)):
+            with Image.open(image_input) as source:
+                image = ImageOps.exif_transpose(source).convert("RGB")
+        elif isinstance(image_input, Image.Image):
+            image = ImageOps.exif_transpose(image_input).convert("RGB")
+        else:
+            image_input.seek(0)
+            with Image.open(image_input) as source:
+                image = ImageOps.exif_transpose(source).convert("RGB")
+
+        original_size = image.size
+        image.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
+        buffer = BytesIO()
+        image.save(buffer, format="JPEG", quality=86, optimize=True)
+        encoded = base64.b64encode(buffer.getvalue()).decode("ascii")
+        safe_caption = html.escape(caption)
+        st.markdown(
+            f"""
+            <figure class="pv-image-preview">
+                <img src="data:image/jpeg;base64,{encoded}" alt="{safe_caption}">
+                <figcaption>{safe_caption}</figcaption>
+            </figure>
+            """,
+            unsafe_allow_html=True,
+        )
+        return original_size, len(image.getbands())
+    except (OSError, ValueError) as exc:
+        st.error(f"Unable to display image '{caption}': {exc}")
+        return None
 
 
 def render_sidebar():

@@ -17,9 +17,16 @@ from config import (
     DEFAULT_MC_SAMPLES,
     MEDICAL_DISCLAIMER,
 )
+from src.dataset_loader import list_supported_image_files
 from src.predict import run_inference_pipeline
 from src.model import load_trained_model
-from src.ui_components import apply_custom_theme, render_disclaimer, render_header, render_sidebar
+from src.ui_components import (
+    apply_custom_theme,
+    render_disclaimer,
+    render_header,
+    render_image_preview,
+    render_sidebar,
+)
 
 st.set_page_config(
     page_title="Chest X-ray Analysis - PulmoVision AI",
@@ -48,13 +55,6 @@ def get_cached_model():
     except Exception as e:
         st.error(f"Error loading model checkpoint: {e}")
         return None
-
-model = get_cached_model()
-
-if model is None:
-    st.warning("⚠️ No trained model checkpoint detected at `models/best_model.keras`.")
-    st.info("You can train the model from scratch on the **Model Training** page or execute: `python scripts/train_model.py`.")
-    st.stop()
 
 # Initialize session state for selected image
 if "selected_image" not in st.session_state:
@@ -94,11 +94,16 @@ with tab_samples:
     with st.container(border=True):
         st.markdown("#### Test the system instantly using verified test-set patients:")
         test_dir = DATA_DIR / "test"
+        gallery_dir = DATA_DIR.parent.parent / "assets" / "gallery"
         
         sample_col1, sample_col2 = st.columns(2)
         
-        norm_samples = list((test_dir / "NORMAL").glob("*.jpeg")) if test_dir.exists() else []
-        pneu_samples = list((test_dir / "PNEUMONIA").glob("*.jpeg")) if test_dir.exists() else []
+        norm_samples = list_supported_image_files(test_dir / "NORMAL", limit=10)
+        pneu_samples = list_supported_image_files(test_dir / "PNEUMONIA", limit=10)
+        if not norm_samples:
+            norm_samples = list_supported_image_files(gallery_dir / "NORMAL", limit=10)
+        if not pneu_samples:
+            pneu_samples = list_supported_image_files(gallery_dir / "PNEUMONIA", limit=10)
 
         with sample_col1:
             st.markdown(
@@ -115,6 +120,8 @@ with tab_samples:
                     st.session_state["selected_image"] = norm_samples[0]
                     st.session_state["selected_image_name"] = f"Normal Patient ({norm_samples[0].name})"
                     st.rerun()
+                else:
+                    st.error("No readable NORMAL demo image is available.")
 
         with sample_col2:
             st.markdown(
@@ -131,6 +138,8 @@ with tab_samples:
                     st.session_state["selected_image"] = pneu_samples[0]
                     st.session_state["selected_image_name"] = f"Pneumonia Patient ({pneu_samples[0].name})"
                     st.rerun()
+                else:
+                    st.error("No readable PNEUMONIA demo image is available.")
 
         st.markdown("---")
         st.caption("Browse across 624 held-out test cohort images:")
@@ -158,14 +167,14 @@ if current_img is not None:
     with wb_col_img:
         with st.container(border=True):
             try:
-                if isinstance(current_img, Path):
-                    preview_pil = Image.open(current_img)
-                else:
-                    current_img.seek(0)
-                    preview_pil = Image.open(current_img)
-                
-                st.image(preview_pil, caption=f"Active Study: {st.session_state['selected_image_name']}", use_container_width=True)
-                st.caption(f"Dimensions: {preview_pil.size[0]}×{preview_pil.size[1]} px · Channels: {len(preview_pil.getbands())}")
+                image_metadata = render_image_preview(
+                    current_img,
+                    f"Active Study: {st.session_state['selected_image_name']}",
+                )
+                if image_metadata is None:
+                    st.stop()
+                image_size, image_channels = image_metadata
+                st.caption(f"Dimensions: {image_size[0]}×{image_size[1]} px · Channels: {image_channels}")
             except Exception as e:
                 st.error(f"Cannot decode image: {e}")
                 st.stop()
@@ -202,6 +211,11 @@ if current_img is not None:
 
     # ----------------- EXECUTE DIAGNOSTIC INFERENCE -----------------
     if analyze_btn:
+        model = get_cached_model()
+        if model is None:
+            st.error("The image preview is ready, but the trained model checkpoint is unavailable.")
+            st.info("Add `models/best_model.keras` or train the model from the Model Training page before analyzing.")
+            st.stop()
         with st.spinner("Executing DenseNet121 inference, computing Grad-CAM gradients, and sampling Monte Carlo Dropout..."):
             try:
                 results = run_inference_pipeline(

@@ -81,6 +81,25 @@ def inspect_dataset_directory(data_dir: Union[str, Path] = DATA_DIR) -> Dict[str
     return report
 
 
+def list_supported_image_files(
+    directory: Union[str, Path], limit: Optional[int] = None
+) -> List[Path]:
+    """Return existing image files in a directory, newest UI work excluded."""
+    image_dir = Path(directory)
+    if not image_dir.exists() or not image_dir.is_dir():
+        return []
+
+    paths = sorted(
+        (
+            path
+            for path in image_dir.iterdir()
+            if path.is_file() and path.suffix.lower() in SUPPORTED_EXTENSIONS and not path.name.startswith(".")
+        ),
+        key=lambda path: path.name.lower(),
+    )
+    return paths if limit is None else paths[:limit]
+
+
 def scan_for_corrupted_images(data_dir: Union[str, Path] = DATA_DIR) -> List[str]:
     """Scans all images in the dataset to verify they can be decoded by PIL."""
     data_path = Path(data_dir)
