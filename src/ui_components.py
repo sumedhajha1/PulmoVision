@@ -71,14 +71,27 @@ def apply_custom_theme():
         color: #2DD4BF !important;
     }
 
-    /* HERO HEADER CARD (Navy gradient with white title and light-blue subtitle) */
+    /* HERO HEADER CARD (Solid dark blue #1E3A5F with 100% pure white text #FFFFFF) */
     .pv-hero-card {
-        background: linear-gradient(135deg, #10243A 0%, #1E3A5F 100%) !important;
+        background: #1E3A5F !important;
+        background-color: #1E3A5F !important;
         border-radius: 14px !important;
         padding: 24px 28px !important;
         margin-bottom: 20px !important;
         border: 1px solid #2A4D77 !important;
-        box-shadow: 0 6px 20px rgba(16, 36, 58, 0.12) !important;
+        box-shadow: 0 4px 16px rgba(16, 36, 58, 0.12) !important;
+    }
+
+    .pv-hero-card,
+    .pv-hero-card *,
+    [data-testid="stMarkdownContainer"] .pv-hero-card,
+    [data-testid="stMarkdownContainer"] .pv-hero-card *,
+    .pv-hero-title,
+    div.pv-hero-title,
+    .pv-hero-subtitle,
+    div.pv-hero-subtitle {
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
     }
 
     .pv-hero-title,
@@ -98,12 +111,13 @@ def apply_custom_theme():
     div.pv-hero-subtitle,
     [data-testid="stMarkdownContainer"] .pv-hero-subtitle,
     [data-testid="stMarkdownContainer"] div.pv-hero-subtitle {
-        color: #D6E4F0 !important;
-        -webkit-text-fill-color: #D6E4F0 !important;
+        color: #FFFFFF !important;
+        -webkit-text-fill-color: #FFFFFF !important;
         font-size: 14.5px !important;
         margin: 0 !important;
         font-weight: 500 !important;
         line-height: 1.4 !important;
+        opacity: 1 !important;
     }
 
     /* Streamlit Alert & Info Box Styling */
@@ -407,19 +421,19 @@ def render_sidebar():
 
 
 def render_header(title: str, subtitle: str, icon: str = "🫁"):
-    """Renders a modern medical hero card with deep navy background, white title (#FFFFFF), and light-blue subtitle (#D6E4F0)."""
+    """Renders a modern medical hero card with solid dark blue background (#1E3A5F), white title (#FFFFFF), and white subtitle (#FFFFFF)."""
     st.markdown(
         f"""
-        <div class="pv-hero-card" style="background: linear-gradient(135deg, #10243A 0%, #1E3A5F 100%) !important; border-radius: 14px !important; padding: 22px 26px !important; margin-bottom: 20px !important; border: 1px solid #2A4D77 !important; box-shadow: 0 6px 20px rgba(16, 36, 58, 0.12) !important;">
+        <div class="pv-hero-card" style="background: #1E3A5F !important; background-color: #1E3A5F !important; border-radius: 14px !important; padding: 22px 26px !important; margin-bottom: 20px !important; border: 1px solid #2A4D77 !important; box-shadow: 0 4px 16px rgba(16, 36, 58, 0.12) !important;">
             <div style="display: flex; align-items: center; gap: 16px;">
                 <span style="font-size: 34px; background: rgba(255, 255, 255, 0.12); padding: 8px 14px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; color: #FFFFFF !important; -webkit-text-fill-color: #FFFFFF !important;">
                     {icon}
                 </span>
                 <div style="flex: 1;">
-                    <div class="pv-hero-title" style="color: #FFFFFF !important; -webkit-text-fill-color: #FFFFFF !important; font-weight: 800 !important; font-size: 26px !important; margin: 0 0 4px 0 !important; line-height: 1.25 !important; letter-spacing: -0.01em !important;">
+                    <div class="pv-hero-title" style="color: #FFFFFF !important; -webkit-text-fill-color: #FFFFFF !important; font-weight: 800 !important; font-size: 26px !important; margin: 0 0 6px 0 !important; line-height: 1.25 !important; letter-spacing: -0.01em !important;">
                         {title}
                     </div>
-                    <div class="pv-hero-subtitle" style="color: #D6E4F0 !important; -webkit-text-fill-color: #D6E4F0 !important; font-size: 14.5px !important; margin: 0 !important; font-weight: 500 !important; line-height: 1.4 !important;">
+                    <div class="pv-hero-subtitle" style="color: #FFFFFF !important; -webkit-text-fill-color: #FFFFFF !important; font-size: 14.5px !important; margin: 0 !important; font-weight: 500 !important; line-height: 1.4 !important; opacity: 1 !important;">
                         {subtitle}
                     </div>
                 </div>
