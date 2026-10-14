@@ -6,8 +6,6 @@ and Stage 2 Fine-Tuning, and monitoring learning curves.
 
 from pathlib import Path
 import streamlit as st
-from PIL import Image
-
 from config import (
     BEST_MODEL_PATH,
     DATA_DIR,
@@ -20,7 +18,13 @@ from config import (
 )
 from src.dataset_loader import inspect_dataset_directory
 from src.train import train_pulmovision_pipeline
-from src.ui_components import apply_custom_theme, render_disclaimer, render_header, render_sidebar
+from src.ui_components import (
+    apply_custom_theme,
+    render_disclaimer,
+    render_header,
+    render_image_preview,
+    render_sidebar,
+)
 from src.utils import load_json
 
 st.set_page_config(
@@ -147,10 +151,29 @@ if submitted:
 
 # Display Training Curves if available
 curves_img_path = OUTPUTS_DIR / "training_curves.png"
-if curves_img_path.exists():
+training_history = load_json(TRAINING_HISTORY_PATH)
+history_has_metrics = isinstance(training_history, dict) and any(
+    training_history.get(metric) for metric in ("loss", "accuracy")
+)
+
+if curves_img_path.exists() and history_has_metrics:
     st.markdown("### 📈 Learning Curves (Loss & Accuracy)")
     with st.container(border=True):
-        st.image(str(curves_img_path), caption="DenseNet121 Training Convergence Curves across Epochs", use_container_width=True)
+        render_image_preview(
+            curves_img_path,
+            "DenseNet121 Training Convergence Curves across Epochs",
+            max_size=1200,
+        )
+elif not history_has_metrics:
+    st.info(
+        "Training curves are not available yet. Start the training pipeline above to generate "
+        "genuine loss and accuracy history."
+    )
+else:
+    st.warning(
+        f"Training history exists, but the curve image is missing at `{curves_img_path}`. "
+        "Run the training pipeline again to regenerate it."
+    )
 
 # CLI Alternative Info
 st.markdown("---")
@@ -165,4 +188,3 @@ with st.container(border=True):
         The script automatically calculates class weights, logs validation checkpoints, and updates `outputs/training_curves.png`.
         """
     )
-

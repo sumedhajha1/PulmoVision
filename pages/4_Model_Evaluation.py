@@ -7,8 +7,6 @@ confusion matrix analysis, ROC and Precision-Recall curves.
 from pathlib import Path
 import streamlit as st
 import pandas as pd
-from PIL import Image
-
 from config import (
     BEST_MODEL_PATH,
     DATA_DIR,
@@ -17,7 +15,13 @@ from config import (
 )
 from src.evaluate import evaluate_model_on_test_set
 from src.model import load_trained_model
-from src.ui_components import apply_custom_theme, render_disclaimer, render_header, render_sidebar
+from src.ui_components import (
+    apply_custom_theme,
+    render_disclaimer,
+    render_header,
+    render_image_preview,
+    render_sidebar,
+)
 from src.utils import load_json
 
 st.set_page_config(
@@ -142,7 +146,12 @@ with cm_col_img:
     with st.container(border=True):
         cm_path = OUTPUTS_DIR / "confusion_matrix.png"
         if cm_path.exists():
-            st.image(str(cm_path), caption="Confusion Matrix on Held-Out Test Set (N=624)", use_container_width=True)
+            render_image_preview(cm_path, "Confusion Matrix on Held-Out Test Set (N=624)")
+        else:
+            st.warning(
+                f"Confusion matrix artifact is missing at `{cm_path}`. "
+                "Click 'Run Test Evaluation' to generate it."
+            )
 
 # Performance Curves: ROC and Precision-Recall
 st.markdown("### 📈 Diagnostic Performance Curves")
@@ -152,13 +161,23 @@ with pcol1:
     with st.container(border=True):
         roc_path = OUTPUTS_DIR / "roc_curve.png"
         if roc_path.exists():
-            st.image(str(roc_path), caption="Receiver Operating Characteristic (ROC) Curve (AUC = 0.9595)", use_container_width=True)
+            render_image_preview(
+                roc_path,
+                f"Receiver Operating Characteristic (ROC) Curve (AUC = {metrics['roc_auc']:.4f})",
+            )
+        else:
+            st.warning(f"ROC curve artifact is missing at `{roc_path}`. Run test evaluation to generate it.")
 
 with pcol2:
     with st.container(border=True):
         pr_path = OUTPUTS_DIR / "precision_recall_curve.png"
         if pr_path.exists():
-            st.image(str(pr_path), caption="Precision-Recall (PR) Curve (AUC = 0.9740)", use_container_width=True)
+            render_image_preview(
+                pr_path,
+                f"Precision-Recall (PR) Curve (AUC = {metrics['pr_auc']:.4f})",
+            )
+        else:
+            st.warning(f"Precision-recall curve artifact is missing at `{pr_path}`. Run test evaluation to generate it.")
 
 # Classification Report Table
 csv_report_path = OUTPUTS_DIR / "classification_report.csv"
@@ -186,4 +205,3 @@ if csv_report_path.exists():
                 mime="application/json",
                 use_container_width=True,
             )
-
